@@ -27,11 +27,13 @@
 </div>
 
 &nbsp;
-## Introducing `coding-projects-templates
-This repository template contains the essential elements used in various projects to many stacks.
+## Introducing
 
-- Allow UP a new channel with PulseAudio temporally.
-- Allow DOWN the channel upped previously.
+Manage channels of audio source composed by virtual speakers and virtual microphones.
+
+- Allow load a new channel with PulseAudio temporally.
+- Allow unload the channel upped previously.
+- Allow list all channels created.
 
 ## Installation
 
@@ -39,8 +41,8 @@ Para instalar el script, clona este repositorio y ejecuta el archivo install.sh 
 To install the script, clones this repository and execute `install.sh` file with root permissions. For example:
 
 ```bash
-git clone https://github.com/tu_usuario/tu_repositorio.git
-cd tu_repositorio
+git clone https://github.com/mauroalderete/virtualmic-pulseaudio
+cd virtualmic-pulseaudio
 sudo bash install.sh
 ```
 
