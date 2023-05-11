@@ -27,14 +27,29 @@
 </div>
 
 &nbsp;
-# :wave: Introducing `coding-projects-templates
-This repository template contains the essential elements used in various projects to many stacks.
+## Introducing
 
-- Allow UP a virtual microphone pipeline with PulseAudio temporally.
+Manage channels of audio source composed by virtual speakers and virtual microphones.
+
+- Allow load a new channel with PulseAudio temporally.
+- Allow unload the channel upped previously.
+- Allow list all channels created.
+
+## Installation
+
+Para instalar el script, clona este repositorio y ejecuta el archivo install.sh con permisos de administrador. Por ejemplo:
+To install the script, clones this repository and execute `install.sh` file with root permissions. For example:
+
+```bash
+git clone https://github.com/mauroalderete/virtualmic-pulseaudio
+cd virtualmic-pulseaudio
+sudo bash install.sh
+```
+
+This copy the main script to /usr/local/bin and does it accesible from any terminal. It will install the dependencies too.
 
 ## Code of conduct
 
 `/CODE_OF_CONDUCT.md`
 
 This code is based on the covenant code. He is only required to specify an email address to the community to send his messages. Now, this email is alderete.mauro@gmail.com.
-

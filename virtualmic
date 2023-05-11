@@ -1,0 +1,164 @@
+#!/bin/bash
+
+default_channel="virtualmic"
+prefix_mic="_mic"
+prefix_speaker="_speaker"
+prefix_monitor="_speaker.monitor"
+
+prefix_mic_description="_Sink"
+prefix_speaker_description="_Speaker"
+prefix_monitor_description="_Mic"
+
+dafs__list () {
+  # Obtener la lista de módulos cargados con pactl list
+  local modules=$(pactl list modules)
+
+  # Filtrar por los nombres que contienen el prefijo
+  local names=$(echo "$modules" | grep -o "sink_name=.*$prefix_mic")
+
+  # Eliminar la parte "sink_name=" y el prefijo
+  local channels=$(echo "$names" | sed -e "s/sink_name=//" -e "s/$prefix_mic//")
+
+  # Ordenar y eliminar los duplicados
+  local distinct=$(echo "$channels" | sort -u)
+
+  # Mostrar la lista de canales creados
+  echo "$distinct"
+}
+
+dafs__up () {
+  # Transformar las opciones largas en cortas
+  for arg in "$@"; do
+    shift
+    case "$arg" in
+      "--channel") set -- "$@" "-c" ;;
+      *) set -- "$@" "$arg" ;;
+    esac
+  done
+
+  # Definir las variables para los argumentos opcionales
+  local channel="${default_channel}"
+
+  # Usar getopts para analizar las opciones c y p
+  while getopts "c:" opt; do
+    case $opt in
+      c) # Asignar el valor de la opción c a la variable channel
+        channel=$OPTARG
+        ;;
+      \?) # Mostrar un mensaje de error si se usa una opción inválida
+        echo "Invalid option: -$OPTARG" >&2
+        exit 1
+        ;;
+      :) # Mostrar un mensaje de error si se usa una opción sin valor
+        echo "Option -$OPTARG require an argument" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  # Llamar a la función de listado y guardar la salida en una variable
+  local list=$(dafs__list)
+
+  # Comprobar si el nombre del canal ya existe en la lista
+  if echo "$list" | grep -q "$channel"; then
+    # Mostrar un mensaje de error y terminar el subcomando
+    echo "The channel $channel already exist."
+    return 2
+  fi
+
+  pactl load-module module-null-sink sink_name="${channel}${prefix_mic}" sink_properties=device.description="${channel}${prefix_mic_description}"
+  pactl load-module module-null-sink sink_name="${channel}${prefix_speaker}" sink_properties=device.description="${channel}${prefix_sepaker_description}"
+  pactl load-module module-remap-source master="${channel}${prefix_monitor}" source_name="${channel}${prefix_mic}" source_properties=device.description="${channel}${prefix_monitor_description}"
+}
+
+dafs__down () {
+    # Transformar las opciones largas en cortas
+  for arg in "$@"; do
+    shift
+    case "$arg" in
+      "--channel") set -- "$@" "-c" ;;
+      *) set -- "$@" "$arg" ;;
+    esac
+  done
+
+  # Definir las variables para los argumentos opcionales
+  local channel="${default_channel}"
+
+  # Usar getopts para analizar las opciones c y p
+  while getopts "c:" opt; do
+    case $opt in
+      c) # Asignar el valor de la opción c a la variable channel
+        channel=$OPTARG
+        ;;
+      \?) # Mostrar un mensaje de error si se usa una opción inválida
+        echo "Invalid option: -$OPTARG" >&2
+        exit 1
+        ;;
+      :) # Mostrar un mensaje de error si se usa una opción sin valor
+        echo "Option -$OPTARG require an argument" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  # Llamar a la función de listado y guardar la salida en una variable
+  local list=$(dafs__list)
+
+  # Comprobar si el nombre del canal no existe en la lista
+  if ! echo "$list" | grep -q "$channel"; then
+    # Mostrar un mensaje de error y terminar el subcomando
+    echo "The channel $channel doesn't exists."
+    return 2
+  fi
+
+  # Obtener el índice del módulo "${channel}_mic"
+  index_mic=$(pactl list modules | grep -B2 "sink_name=${channel}${prefix_mic}" | head -n1 | cut -d'#' -f2)
+
+  # Obtener el índice del módulo "${channel}_speaker"
+  index_speaker=$(pactl list modules | grep -B2 "sink_name=${channel}${prefix_speaker}" | head -n1 | cut -d'#' -f2)
+
+  # Eliminar los módulos usando sus índices
+  echo "Down ${channel}_mic audio source..."
+  pactl unload-module $index_mic
+  echo "Down ${channel}_speaker audio source..."
+  pactl unload-module $index_speaker
+}
+
+dafs__help () {
+  cat << EOF
+virtualmic
+
+Allows you to create an audio channel with a virtual speaker and a virtual microphone using PulseAudio.
+This way, other applications can use the virtual microphone as an audio input.
+This is useful for redirecting audio sources to other channels from software like OBS.
+
+Usage: virtualmic <command> [options]
+
+  up  Creates a series of audio sources called a channel to redirect the audio streams to a virtual microphone.
+
+      --channel, -c  Name of the channel. The default is “virtualmic”.
+
+  down  Disables the channel created with the previous command composed of several audio sources.
+  
+      --channel, -c  Name of the channel that you want to down. The default is “virtualmic”.
+
+  list  Show all channels online
+
+  help Shows this help
+EOF
+}
+
+# Definir la función lanzadora que verifica el tipo de subcomando
+dafs () {
+  local cmd=$1; shift # guardar el primer argumento como el nombre del subcomando y eliminarlo de la lista
+  if type "dafs__$cmd" >/dev/null 2>&1; then # verificar si existe una función con el prefijo "dafs__" y el nombre del subcomando
+    "dafs__$cmd" "$@" # ejecutar la función del subcomando con los argumentos restantes
+  else
+    echo "Subcommand $cmd unknown" >&2 # mostrar un mensaje de error si no existe la función
+    exit 1
+  fi
+}
+
+# Si el script se invoca directamente, llamar a la función lanzadora con los argumentos pasados
+[[ $_ == $0 ]] && exit # verificar si el script se está ejecutando o solo se está cargando
+dafs "$@" # llamar a la función lanzadora con todos los argumentos
