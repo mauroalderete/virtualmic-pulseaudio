@@ -1,13 +1,13 @@
 # virtualmic/pulseaudio
 
-<h4 align="center">Script Bash to set virtual microphone to PulseAudio</h4>
+<h4 align="center">Script Bash to set virtual microphone to OBS with PulseAudio</h4>
 
 &nbsp;
 
 <div align="center">
 
 <a href="./LICENSE">
-	<img alt="License: MIT" src="https://img.shields.io/badge/License-Private-yellow.svg">
+	<img alt="License: MIT" src="https://img.shields.io/badge/MIT-License-yellow.svg">
 </a>
 <a href="./CODE_OF_CONDUCT.md">
 	<img alt="Contributor covenant: 2.1" src="https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg">
@@ -34,6 +34,8 @@ Manage channels of audio source composed by virtual speakers and virtual microph
 - Allow load a new channel with PulseAudio temporally.
 - Allow unload the channel upped previously.
 - Allow list all channels created.
+
+> This script is based on the answer of [Broadways8701](https://obsproject.com/forum/members/broadways8701.428018/) in [OBS Forum](https://obsproject.com/forum/) to thread [Audio output whit the virtual camera](https://obsproject.com/forum/threads/audio-output-with-the-virtual-camera.155140/)
 
 ## Installation
 
