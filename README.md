@@ -1,6 +1,6 @@
 # virtualmic/pulseaudio
 
-<h4 align="center">Script Bash to set virtual microphone to PulseAudio</h4>
+<h4 align="center">Script Bash to set virtual microphone to OBS with PulseAudio</h4>
 
 &nbsp;
 
