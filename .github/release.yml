@@ -1,0 +1,14 @@
+changelog:
+  categories:
+    - title: 'Breaking Changes :fire:'
+      labels:
+        - BREAKING CHANGE
+    - title: 'New Features :confetti_ball:'
+      labels:
+        - feature
+    - title: 'Fixes :bug:'
+      labels:
+        - fix
+    - title: Other Changes
+      labels:
+        - "*"

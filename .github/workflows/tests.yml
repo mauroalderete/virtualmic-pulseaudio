@@ -1,0 +1,30 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: ['main']
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup test environment
+        run: echo "commands to setup test environment, like a node environment with actions/setup-node@v3"
+
+      - name: Install dependencies
+        run: echo "commands to install dependencies, like 'npm ci'"
+
+      - name: Run lint
+        run: echo "commands to check lint, like 'npm run lint'"
+
+      - name: Run unit tests with coverage
+        run: echo "commands to start coverage test, like 'npm run coverage'"
+
+      - name: Run e2e tests
+        run: echo "commands to start e2e test, like 'npm run test:e2e'"

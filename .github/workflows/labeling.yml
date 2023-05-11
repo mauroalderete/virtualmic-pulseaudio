@@ -1,0 +1,57 @@
+name: Labeling
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+jobs:
+  labels-test:
+    name: Assign and test labels from conventional-commits
+    if: github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Assign labels
+        id: action-assign-labels
+        uses: mauroalderete/action-assign-labels@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          conventional-commits: |
+            conventional-commits:
+              - type: 'fix'
+                nouns: ['FIX', 'Fix', 'fix', 'FIXED', 'Fixed', 'fixed']
+                labels: ['fix']
+              - type: 'feature'
+                nouns: ['FEATURE', 'Feature', 'feature', 'FEAT', 'Feat', 'feat']
+                labels: ['feature']
+              - type: 'breaking_change'
+                nouns: ['BREAKING CHANGE', 'BREAKING', 'MAJOR']
+                labels: ['BREAKING CHANGE']
+              - type: 'dependencies'
+                nouns: ['dependencies','dependencie','depends','depend','deps','dep','build(deps)','build(deps-dev)']
+                labels: ['build','dependencies','fix']
+              - type: 'documentation'
+                nouns: ['doc','docu','document','documentation']
+                labels: ['documentation','fix']
+              - type: 'build'
+                nouns: ['build','rebuild']
+                labels: ['build','fix']
+              - type: 'config'
+                nouns: ['config', 'conf', 'cofiguration', 'configure']
+                labels: ['config','fix']
+
+      - name: Verify labels
+        id: action-verify-labels
+        uses: mauroalderete/action-verify-labels@v1
+        with:
+          none: question, wontfix, invalid
+          some: fix, feature, BREAKING CHANGE
+          request-review: true
+          request-review-header: "**:bookmark: verify-labels-action**"
+          github-token: ${{ secrets.GITHUB_TOKEN }}

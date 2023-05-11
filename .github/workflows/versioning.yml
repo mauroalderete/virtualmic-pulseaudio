@@ -1,0 +1,92 @@
+name: Versioning
+
+on:
+  push:
+    branches:
+      - "main"
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  versioning:
+    name: Versioning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+    outputs:
+      version: ${{ steps.semver.outputs.next }}
+    steps:
+      - name: Set up repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.push.head.ref }}
+
+      - name: Get next version
+        id: semver
+        uses: ietf-tools/semver-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          majorList: BREAKING CHANGE, BREAKING, MAJOR
+          minorList: FEATURE, Feature, feature, FEAT, Feat, feat
+          patchList: FIX, Fix, fix, FIXED, Fixed, fixed, config, conf, cofiguration, configure, build, rebuild, doc, docu, document, documentation, dependencies, dependencie, depends, deps, dep, build(deps), build(deps-dev)
+          patchAll: false
+
+      - name: Push tags
+        id: push-tags
+        run: |
+          #!/bin/sh
+          # Get minor tag
+          minor=$(echo ${{ steps.semver.outputs.next }} | sed 's/.[0-9]\{1,\}$//')
+          # Get major tag
+          major=$(echo ${{ steps.semver.outputs.next }} | sed 's/.[0-9]\{1,\}.[0-9]\{1,\}$//')
+
+          # Set new tags and force update
+          git tag ${{ steps.semver.outputs.next }}
+          git tag --force $minor
+          git tag --force $major
+
+          # Push new tag forcing the update of the minor and major tag
+          git push --tag --force
+
+      - name: Setup environment
+        run: echo "commands to setup build environment"
+
+      - name: Build
+        run: echo "command to build"
+
+      - name: Compress build
+        run: echo "command to compress build, tipically tar -zcvf dest.tar.gz orig/"
+
+      - name: Create Release from PR
+        id: create-release-from-pr
+        if: github.event.head_commit.committer.username == 'web-flow'
+        run: |
+          #!/bin/sh
+
+          # The last commit was committed by GitHub.
+          # We assume that the push event come of the a potential pull-request.
+          gh release create ${{ steps.semver.outputs.next }} \
+          --title 'Release ${{ steps.semver.outputs.next }}' \
+          --notes "Changelog Contents :sunglasses:" \
+          --generate-notes
+          # add the compress package file, like build.tar.gz, if is necessary. Remember add \ escape line char in previous line
+
+      - name: Create Release from Commits
+        id: create-release-from-commits
+        if: github.event.head_commit.committer.username != 'web-flow'
+        run: |
+          #!/bin/sh
+
+          echo "::warning ::There were no pull requests associated with the commits included in this release. Automatically-generated notes were not generated."
+
+          # The last commit was not committed by GitHub.
+          # We assume that the push event come directly.
+          gh release create ${{ steps.semver.outputs.next }} \
+          --title 'Release ${{ steps.semver.outputs.next }}' \
+          --notes "Changelog Contents :sunglasses:" \
+          --generate-notes
+          # add the compress package file, like build.tar.gz, if is necessary. Remember add \ escape line char in previous line
