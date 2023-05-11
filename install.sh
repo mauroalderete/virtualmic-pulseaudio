@@ -7,7 +7,7 @@ if [ $(id -u) -ne 0 ]; then
 fi
 
 # Comprobar si el script principal existe y es ejecutable
-script="dafs"
+script="virtualmic"
 if [ ! -f "$script" ] || [ ! -x "$script" ]; then
   echo "El script principal $script no existe o no es ejecutable."
   exit 2
