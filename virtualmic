@@ -67,7 +67,7 @@ dafs__up () {
   fi
 
   pactl load-module module-null-sink sink_name="${channel}${prefix_mic}" sink_properties=device.description="${channel}${prefix_mic_description}"
-  pactl load-module module-null-sink sink_name="${channel}${prefix_speaker}" sink_properties=device.description="${channel}${prefix_sepaker_description}"
+  pactl load-module module-null-sink sink_name="${channel}${prefix_speaker}" sink_properties=device.description="${channel}${prefix_speaker_description}"
   pactl load-module module-remap-source master="${channel}${prefix_monitor}" source_name="${channel}${prefix_mic}" source_properties=device.description="${channel}${prefix_monitor_description}"
 }
 
