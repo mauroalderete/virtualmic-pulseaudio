@@ -1,6 +1,6 @@
 #!/bin/bash
 
-$default_channel="virtualmic"
+default_channel="virtualmic"
 
 dafs__up () {
   # Transformar las opciones largas en cortas
@@ -16,7 +16,7 @@ dafs__up () {
   local channel="${default_channel}"
 
   # Usar getopts para analizar las opciones c y p
-  while getopts "c:p:" opt; do
+  while getopts "c:" opt; do
     case $opt in
       c) # Asignar el valor de la opción c a la variable channel
         channel=$OPTARG
@@ -34,7 +34,7 @@ dafs__up () {
 
   pactl load-module module-null-sink sink_name="${channel}_mic" sink_properties=device.description="${channel}_Sink"
   pactl load-module module-null-sink sink_name="${channel}_speaker" sink_properties=device.description="${channel}_Speaker"
-  pactl load-module module-remap-source master="${channel}_speaker.monitor" source_name="virtual_mic" source_properties=device.description="${channel}_Mic"
+  pactl load-module module-remap-source master="${channel}_speaker.monitor" source_name="${channel}_mic" source_properties=device.description="${channel}_Mic"
 }
 
 dafs__down () {
@@ -51,7 +51,7 @@ dafs__down () {
   local channel="${default_channel}"
 
   # Usar getopts para analizar las opciones c y p
-  while getopts "c:p:" opt; do
+  while getopts "c:" opt; do
     case $opt in
       c) # Asignar el valor de la opción c a la variable channel
         channel=$OPTARG
@@ -68,38 +68,37 @@ dafs__down () {
   done
 
   # Obtener el índice del módulo "${channel}_mic"
-  index_mic=$(pactl list modules | grep -B1 "sink_name=${channel}_mic" | head -n1 | cut -d'#' -f2)
+  index_mic=$(pactl list modules | grep -B2 "sink_name=${channel}_mic" | head -n1 | cut -d'#' -f2)
 
   # Obtener el índice del módulo "${channel}_speaker"
-  index_speaker=$(pactl list modules | grep -B1 "sink_name=${channel}_speaker" | head -n1 | cut -d'#' -f2)
-
-  # Obtener el índice del módulo "{channel}_speaker.monitor"
-  index_virtual_mic=$(pactl list modules | grep -B1 "sink_name=${channel}_speaker.monitor" | head -n1 | cut -d'#' -f2)
+  index_speaker=$(pactl list modules | grep -B2 "sink_name=${channel}_speaker" | head -n1 | cut -d'#' -f2)
 
   # Eliminar los módulos usando sus índices
-  pactl unload-module $index_virtual_mic
-  pactl unload-module $index_speaker
+  echo "Down ${channel}_mic audio source..."
   pactl unload-module $index_mic
+  echo "Down ${channel}_speaker audio source..."
+  pactl unload-module $index_speaker
 }
 
 dafs__help () {
-  cp "$1" "$2" # copiar el primer argumento al segundo
   cat << EOF
 virtualmic
 
-Permite crear un canal de audio con un speaker virtual y un microphone virtual usando PulseAudio. De tal manera que el resto de las apliaciones puedan usar el microfono virtual como entrada de audio.
-Esto es util para redirigir fuentes de audio a otros canales desde software como OBS
+Allows you to create an audio channel with a virtual speaker and a virtual microphone using PulseAudio.
+This way, other applications can use the virtual microphone as an audio input.
+This is useful for redirecting audio sources to other channels from software like OBS.
 
-Uso:
-virtualmic <command> [opciones]
+Usage: virtualmic <command> [options]
 
-up      Permite crear una serie de fuentes de audio denominado canal para redirigir los streams de audio hasta un microfono virtual.
-    channel, -c Nombre del canal que sera concatenado al prefijo. Por defecto es "virtualmic"
+  up  Creates a series of audio sources called a channel to redirect the audio streams to a virtual microphone.
 
-down    Da de baja el canal dado de alta con el comando anterior compuesto por varias fuentes de audio.
-    channel, -c Nombre del canal que sera concatenado al prefijo. Por defecto es "virtualmic"
+      --channel, -c  Name of the channel. The default is “virtualmic”.
 
-help    Muestra esta ayuda
+  down  Disables the channel created with the previous command composed of several audio sources.
+  
+      --channel, -c  Name of the channel that you want to down. The default is “virtualmic”.
+
+  help Shows this help
 EOF
 }
 
@@ -115,5 +114,5 @@ dafs () {
 }
 
 # Si el script se invoca directamente, llamar a la función lanzadora con los argumentos pasados
-[ [ $_ != $0 ]] && return # verificar si el script se está ejecutando o solo se está cargando
+[[ $_ == $0 ]] && exit # verificar si el script se está ejecutando o solo se está cargando
 dafs "$@" # llamar a la función lanzadora con todos los argumentos
