@@ -46,15 +46,25 @@ dafs__up () {
         channel=$OPTARG
         ;;
       \?) # Mostrar un mensaje de error si se usa una opción inválida
-        echo "Opción inválida: -$OPTARG" >&2
+        echo "Invalid option: -$OPTARG" >&2
         exit 1
         ;;
       :) # Mostrar un mensaje de error si se usa una opción sin valor
-        echo "Opción -$OPTARG requiere un argumento" >&2
+        echo "Option -$OPTARG require an argument" >&2
         exit 1
         ;;
     esac
   done
+
+  # Llamar a la función de listado y guardar la salida en una variable
+  local list=$(dafs__list)
+
+  # Comprobar si el nombre del canal ya existe en la lista
+  if echo "$list" | grep -q "$channel"; then
+    # Mostrar un mensaje de error y terminar el subcomando
+    echo "The channel $channel already exist."
+    return 2
+  fi
 
   pactl load-module module-null-sink sink_name="${channel}${prefix_mic}" sink_properties=device.description="${channel}${prefix_mic_description}"
   pactl load-module module-null-sink sink_name="${channel}${prefix_speaker}" sink_properties=device.description="${channel}${prefix_sepaker_description}"
@@ -81,15 +91,25 @@ dafs__down () {
         channel=$OPTARG
         ;;
       \?) # Mostrar un mensaje de error si se usa una opción inválida
-        echo "Opción inválida: -$OPTARG" >&2
+        echo "Invalid option: -$OPTARG" >&2
         exit 1
         ;;
       :) # Mostrar un mensaje de error si se usa una opción sin valor
-        echo "Opción -$OPTARG requiere un argumento" >&2
+        echo "Option -$OPTARG require an argument" >&2
         exit 1
         ;;
     esac
   done
+
+  # Llamar a la función de listado y guardar la salida en una variable
+  local list=$(dafs__list)
+
+  # Comprobar si el nombre del canal no existe en la lista
+  if ! echo "$list" | grep -q "$channel"; then
+    # Mostrar un mensaje de error y terminar el subcomando
+    echo "The channel $channel doesn't exists."
+    return 2
+  fi
 
   # Obtener el índice del módulo "${channel}_mic"
   index_mic=$(pactl list modules | grep -B2 "sink_name=${channel}${prefix_mic}" | head -n1 | cut -d'#' -f2)
@@ -134,7 +154,7 @@ dafs () {
   if type "dafs__$cmd" >/dev/null 2>&1; then # verificar si existe una función con el prefijo "dafs__" y el nombre del subcomando
     "dafs__$cmd" "$@" # ejecutar la función del subcomando con los argumentos restantes
   else
-    echo "Subcomando $cmd no reconocido" >&2 # mostrar un mensaje de error si no existe la función
+    echo "Subcommand $cmd unknown" >&2 # mostrar un mensaje de error si no existe la función
     exit 1
   fi
 }
