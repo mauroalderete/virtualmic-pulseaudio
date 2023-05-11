@@ -35,6 +35,8 @@ Manage channels of audio source composed by virtual speakers and virtual microph
 - Allow unload the channel upped previously.
 - Allow list all channels created.
 
+> This script is based on the answer of [Broadways8701](https://obsproject.com/forum/members/broadways8701.428018/) in [OBS Forum](https://obsproject.com/forum/) to thread [Audio output whit the virtual camera](https://obsproject.com/forum/threads/audio-output-with-the-virtual-camera.155140/)
+
 ## Installation
 
 Para instalar el script, clona este repositorio y ejecuta el archivo install.sh con permisos de administrador. Por ejemplo:
