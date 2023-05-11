@@ -1,0 +1,119 @@
+#!/bin/bash
+
+$default_channel="virtualmic"
+
+dafs__up () {
+  # Transformar las opciones largas en cortas
+  for arg in "$@"; do
+    shift
+    case "$arg" in
+      "--channel") set -- "$@" "-c" ;;
+      *) set -- "$@" "$arg" ;;
+    esac
+  done
+
+  # Definir las variables para los argumentos opcionales
+  local channel="${default_channel}"
+
+  # Usar getopts para analizar las opciones c y p
+  while getopts "c:p:" opt; do
+    case $opt in
+      c) # Asignar el valor de la opción c a la variable channel
+        channel=$OPTARG
+        ;;
+      \?) # Mostrar un mensaje de error si se usa una opción inválida
+        echo "Opción inválida: -$OPTARG" >&2
+        exit 1
+        ;;
+      :) # Mostrar un mensaje de error si se usa una opción sin valor
+        echo "Opción -$OPTARG requiere un argumento" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  pactl load-module module-null-sink sink_name="${channel}_mic" sink_properties=device.description="${channel}_Sink"
+  pactl load-module module-null-sink sink_name="${channel}_speaker" sink_properties=device.description="${channel}_Speaker"
+  pactl load-module module-remap-source master="${channel}_speaker.monitor" source_name="virtual_mic" source_properties=device.description="${channel}_Mic"
+}
+
+dafs__down () {
+    # Transformar las opciones largas en cortas
+  for arg in "$@"; do
+    shift
+    case "$arg" in
+      "--channel") set -- "$@" "-c" ;;
+      *) set -- "$@" "$arg" ;;
+    esac
+  done
+
+  # Definir las variables para los argumentos opcionales
+  local channel="${default_channel}"
+
+  # Usar getopts para analizar las opciones c y p
+  while getopts "c:p:" opt; do
+    case $opt in
+      c) # Asignar el valor de la opción c a la variable channel
+        channel=$OPTARG
+        ;;
+      \?) # Mostrar un mensaje de error si se usa una opción inválida
+        echo "Opción inválida: -$OPTARG" >&2
+        exit 1
+        ;;
+      :) # Mostrar un mensaje de error si se usa una opción sin valor
+        echo "Opción -$OPTARG requiere un argumento" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  # Obtener el índice del módulo "${channel}_mic"
+  index_mic=$(pactl list modules | grep -B1 "sink_name=${channel}_mic" | head -n1 | cut -d'#' -f2)
+
+  # Obtener el índice del módulo "${channel}_speaker"
+  index_speaker=$(pactl list modules | grep -B1 "sink_name=${channel}_speaker" | head -n1 | cut -d'#' -f2)
+
+  # Obtener el índice del módulo "{channel}_speaker.monitor"
+  index_virtual_mic=$(pactl list modules | grep -B1 "sink_name=${channel}_speaker.monitor" | head -n1 | cut -d'#' -f2)
+
+  # Eliminar los módulos usando sus índices
+  pactl unload-module $index_virtual_mic
+  pactl unload-module $index_speaker
+  pactl unload-module $index_mic
+}
+
+dafs__help () {
+  cp "$1" "$2" # copiar el primer argumento al segundo
+  cat << EOF
+virtualmic
+
+Permite crear un canal de audio con un speaker virtual y un microphone virtual usando PulseAudio. De tal manera que el resto de las apliaciones puedan usar el microfono virtual como entrada de audio.
+Esto es util para redirigir fuentes de audio a otros canales desde software como OBS
+
+Uso:
+virtualmic <command> [opciones]
+
+up      Permite crear una serie de fuentes de audio denominado canal para redirigir los streams de audio hasta un microfono virtual.
+    channel, -c Nombre del canal que sera concatenado al prefijo. Por defecto es "virtualmic"
+
+down    Da de baja el canal dado de alta con el comando anterior compuesto por varias fuentes de audio.
+    channel, -c Nombre del canal que sera concatenado al prefijo. Por defecto es "virtualmic"
+
+help    Muestra esta ayuda
+EOF
+}
+
+# Definir la función lanzadora que verifica el tipo de subcomando
+dafs () {
+  local cmd=$1; shift # guardar el primer argumento como el nombre del subcomando y eliminarlo de la lista
+  if type "dafs__$cmd" >/dev/null 2>&1; then # verificar si existe una función con el prefijo "dafs__" y el nombre del subcomando
+    "dafs__$cmd" "$@" # ejecutar la función del subcomando con los argumentos restantes
+  else
+    echo "Subcomando $cmd no reconocido" >&2 # mostrar un mensaje de error si no existe la función
+    exit 1
+  fi
+}
+
+# Si el script se invoca directamente, llamar a la función lanzadora con los argumentos pasados
+[ [ $_ != $0 ]] && return # verificar si el script se está ejecutando o solo se está cargando
+dafs "$@" # llamar a la función lanzadora con todos los argumentos
