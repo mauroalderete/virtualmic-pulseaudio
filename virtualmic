@@ -1,6 +1,30 @@
 #!/bin/bash
 
 default_channel="virtualmic"
+prefix_mic="_mic"
+prefix_speaker="_speaker"
+prefix_monitor="_speaker.monitor"
+
+prefix_mic_description="_Sink"
+prefix_speaker_description="_Speaker"
+prefix_monitor_description="_Mic"
+
+dafs__list () {
+  # Obtener la lista de módulos cargados con pactl list
+  local modules=$(pactl list modules)
+
+  # Filtrar por los nombres que contienen el prefijo
+  local names=$(echo "$modules" | grep -o "sink_name=.*$prefix_mic")
+
+  # Eliminar la parte "sink_name=" y el prefijo
+  local channels=$(echo "$names" | sed -e "s/sink_name=//" -e "s/$prefix_mic//")
+
+  # Ordenar y eliminar los duplicados
+  local distinct=$(echo "$channels" | sort -u)
+
+  # Mostrar la lista de canales creados
+  echo "$distinct"
+}
 
 dafs__up () {
   # Transformar las opciones largas en cortas
@@ -32,9 +56,9 @@ dafs__up () {
     esac
   done
 
-  pactl load-module module-null-sink sink_name="${channel}_mic" sink_properties=device.description="${channel}_Sink"
-  pactl load-module module-null-sink sink_name="${channel}_speaker" sink_properties=device.description="${channel}_Speaker"
-  pactl load-module module-remap-source master="${channel}_speaker.monitor" source_name="${channel}_mic" source_properties=device.description="${channel}_Mic"
+  pactl load-module module-null-sink sink_name="${channel}${prefix_mic}" sink_properties=device.description="${channel}${prefix_mic_description}"
+  pactl load-module module-null-sink sink_name="${channel}${prefix_speaker}" sink_properties=device.description="${channel}${prefix_sepaker_description}"
+  pactl load-module module-remap-source master="${channel}${prefix_monitor}" source_name="${channel}${prefix_mic}" source_properties=device.description="${channel}${prefix_monitor_description}"
 }
 
 dafs__down () {
@@ -68,10 +92,10 @@ dafs__down () {
   done
 
   # Obtener el índice del módulo "${channel}_mic"
-  index_mic=$(pactl list modules | grep -B2 "sink_name=${channel}_mic" | head -n1 | cut -d'#' -f2)
+  index_mic=$(pactl list modules | grep -B2 "sink_name=${channel}${prefix_mic}" | head -n1 | cut -d'#' -f2)
 
   # Obtener el índice del módulo "${channel}_speaker"
-  index_speaker=$(pactl list modules | grep -B2 "sink_name=${channel}_speaker" | head -n1 | cut -d'#' -f2)
+  index_speaker=$(pactl list modules | grep -B2 "sink_name=${channel}${prefix_speaker}" | head -n1 | cut -d'#' -f2)
 
   # Eliminar los módulos usando sus índices
   echo "Down ${channel}_mic audio source..."
@@ -97,6 +121,8 @@ Usage: virtualmic <command> [options]
   down  Disables the channel created with the previous command composed of several audio sources.
   
       --channel, -c  Name of the channel that you want to down. The default is “virtualmic”.
+
+  list  Show all channels online
 
   help Shows this help
 EOF
