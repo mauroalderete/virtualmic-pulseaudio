@@ -7,7 +7,7 @@
 <div align="center">
 
 <a href="./LICENSE">
-	<img alt="License: MIT" src="https://img.shields.io/badge/License-Private-yellow.svg">
+	<img alt="License: MIT" src="https://img.shields.io/badge/MIT-License-yellow.svg">
 </a>
 <a href="./CODE_OF_CONDUCT.md">
 	<img alt="Contributor covenant: 2.1" src="https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg">
