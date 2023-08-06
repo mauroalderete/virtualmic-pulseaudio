@@ -1,4 +1,4 @@
-# virtualmic/pulseaudio
+# virtualmic/pulseaudio <!-- omit in toc --> 
 
 <h4 align="center">Script Bash to set virtual microphone to OBS with PulseAudio</h4>
 
@@ -25,6 +25,21 @@
 </a>
 
 </div>
+
+- [Introducing](#introducing)
+- [How to work?](#how-to-work)
+- [Installation](#installation)
+- [Usage](#usage)
+	- [Creating a Channel](#creating-a-channel)
+	- [Disabling a Channel](#disabling-a-channel)
+	- [Listing Existing Channels](#listing-existing-channels)
+	- [Help](#help)
+- [Practical Examples](#practical-examples)
+	- [Using a Virtual Microphone in OBS to Inject Audio](#using-a-virtual-microphone-in-obs-to-inject-audio)
+	- [Using a Virtual Microphone in Discord to Talk](#using-a-virtual-microphone-in-discord-to-talk)
+	- [Configure a Virtual Microphone at Start the System](#configure-a-virtual-microphone-at-start-the-system)
+- [Code of conduct](#code-of-conduct)
+
 
 &nbsp;
 ## Introducing
@@ -148,7 +163,7 @@ virtualmic up --channel discord
 virtualmic down --channel discord
 ```
 
-### Configure a virtual microphone at start the system
+### Configure a Virtual Microphone at Start the System
 
 Each you session is restarted the audio channel created is lost. To avoid this, you can add in your bash script `~/.bashrc` the command to create the channel.
 
