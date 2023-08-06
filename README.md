@@ -39,7 +39,6 @@ Manage channels of audio source composed by virtual speakers and virtual microph
 
 ## Installation
 
-Para instalar el script, clona este repositorio y ejecuta el archivo install.sh con permisos de administrador. Por ejemplo:
 To install the script, clones this repository and execute `install.sh` file with root permissions. For example:
 
 ```bash
